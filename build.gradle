@@ -11,9 +11,9 @@ base {
 }
 
 repositories {
-    maven { url "https://maven.fabricmc.net/" }
-    maven { url "https://maven.shedaniel.me/" }
-    maven { url "https://maven.terraformersmc.com/" }
+    maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://maven.shedaniel.me/" }
+    maven { url = "https://maven.terraformersmc.com/" }
     mavenCentral()
 }
 
@@ -26,15 +26,17 @@ dependencies {
 }
 
 processResources {
-    inputs.property "version", project.version
+    def version = project.version
+    inputs.property "version", version
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": version
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 25
+
 }
 
 java {
@@ -47,16 +49,5 @@ java {
 jar {
     from("LICENSE") {
         rename { "${it}_${base.archivesName.get()}" }
-    }
-}
-
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
     }
 }

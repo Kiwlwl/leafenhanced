@@ -1,5 +1,7 @@
 package com.leafenhanced.mod.client;
 
+import com.leafenhanced.mod.LeafEnhancedMod;
+import com.leafenhanced.mod.client.block.LayeredLeafLitterRenderer;
 import com.leafenhanced.mod.client.particle.LeafParticleRenderer;
 import com.leafenhanced.mod.client.wind.WindState;
 import com.leafenhanced.mod.config.LeafEnhancedConfig;
@@ -10,18 +12,22 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class LeafEnhancedModClient implements ClientModInitializer {
     private static int tickCounter = 0;
+    private static ClientLevel lastLevel = null;
 
     @Override
     public void onInitializeClient() {
         ParticleProviderRegistry.getInstance().register(FallingLeafParticle.TYPE, new LeafParticleRenderer.Provider());
+        BlockEntityRenderers.register(LeafEnhancedMod.LEAF_LITTER_BE, LayeredLeafLitterRenderer::new);
     }
 
     public static void onClientTick(Minecraft minecraft) {
@@ -30,60 +36,87 @@ public class LeafEnhancedModClient implements ClientModInitializer {
         }
 
         ClientLevel level = minecraft.level;
+        if (level != lastLevel) {
+            tickCounter = 0;
+            lastLevel = level;
+        }
+
         LocalPlayer player = minecraft.player;
         RandomSource random = level.getRandom();
 
-        WindState.update(minecraft, random);
-
-        if (++tickCounter % 5 != 0) {
-            return;
-        }
+        WindState.update(random);
 
         LeafEnhancedConfig config = LeafEnhancedConfig.get();
         if (!config.fallingLeaves || config.particleChance <= 0) {
             return;
         }
 
-        BlockPos center = player.blockPosition();
-        Holder<Biome> biome = level.getBiome(center);
-        if (!biome.is(ModBiomeTags.DECIDUOUS_BIOMES)) {
+        if (++tickCounter % config.spawnInterval != 0) {
             return;
         }
 
         int attempts = config.maxParticlesPerTick;
-        double chance = config.particleChance;
 
         if (attempts <= 0) {
             return;
         }
 
+        if (LeafParticleRenderer.getActiveCount() >= config.maxActiveParticles) {
+            return;
+        }
+
+        BlockPos center = player.blockPosition();
         int rangeXZ = config.particleRenderDistance;
         int rangeY = 12;
+        float maxDistSqr = rangeXZ * rangeXZ + rangeY * rangeY;
+
+        double chance = config.particleChance;
+        double falloff = config.distanceFalloff;
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int spawned = 0;
         for (int i = 0; i < attempts; i++) {
-            if (random.nextDouble() > chance) {
-                continue;
-            }
-
             int x = center.getX() + random.nextInt(rangeXZ * 2) - rangeXZ;
-            int y = center.getY() + random.nextInt(rangeY * 2) - rangeY;
+            int y = center.getY() + 4 + random.nextInt(rangeY);
             int z = center.getZ() + random.nextInt(rangeXZ * 2) - rangeXZ;
             pos.set(x, y, z);
 
-            if (level.getBlockState(pos).is(BlockTags.LEAVES)) {
-                double px = x + random.nextDouble();
-                double py = y + random.nextDouble();
-                double pz = z + random.nextDouble();
-                double dx = WindState.windX + (random.nextDouble() - 0.5) * 0.02;
-                double dy = -0.05 - random.nextDouble() * 0.05;
-                double dz = WindState.windZ + (random.nextDouble() - 0.5) * 0.02;
-                level.addParticle(FallingLeafParticle.TYPE, px, py, pz, dx, dy, dz);
-                spawned++;
-                if (spawned >= config.maxParticlesPerTick) {
-                    break;
-                }
+            BlockState leafState = level.getBlockState(pos);
+            if (!leafState.is(BlockTags.LEAVES)) {
+                continue;
+            }
+
+            BlockPos belowPos = pos.below();
+            if (!level.getBlockState(belowPos).isAir()) {
+                continue;
+            }
+
+            float ddx = x - center.getX();
+            float ddy = y - center.getY();
+            float ddz = z - center.getZ();
+            float distSqr = ddx * ddx + ddy * ddy + ddz * ddz;
+            float distanceFactor = 1.0f - (float)(Math.min(1.0, distSqr / maxDistSqr) * falloff);
+            distanceFactor = Math.max(distanceFactor, 0.2f);
+
+            if (random.nextDouble() > chance * distanceFactor) {
+                continue;
+            }
+
+            Holder<Biome> biome = level.getBiome(pos);
+            if (!biome.is(ModBiomeTags.DECIDUOUS_BIOMES)) {
+                continue;
+            }
+
+            double px = x + random.nextDouble();
+            double py = y + random.nextDouble();
+            double pz = z + random.nextDouble();
+            double vx = (random.nextDouble() - 0.5) * 0.02;
+            double vy = -0.05 - random.nextDouble() * 0.05;
+            double vz = (random.nextDouble() - 0.5) * 0.02;
+            level.addParticle(FallingLeafParticle.TYPE, px, py, pz, vx, vy, vz);
+            spawned++;
+            if (spawned >= config.maxParticlesPerTick) {
+                break;
             }
         }
     }

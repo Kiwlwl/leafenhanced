@@ -1,0 +1,7 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "leafenhanced:block/leaf_litter_oak_layer_4"
+  },
+  "elements": []
+}

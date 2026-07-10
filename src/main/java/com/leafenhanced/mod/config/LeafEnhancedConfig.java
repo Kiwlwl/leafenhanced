@@ -17,15 +17,20 @@ public class LeafEnhancedConfig {
     public double particleChance = 0.1;
     public int maxParticlesPerTick = 50;
     public int particleRenderDistance = 32;
+    public double distanceFalloff = 0.6;
+    public int maxActiveParticles = 1000;
+    public int particleLifetime = 80;
+    public int spawnInterval = 5;
     public float baseWindStrength = 0.02f;
-    public boolean windSounds = true;
-    public boolean stormGusts = true;
+    public float particleMaxWindSpeed = 0.3f;
 
     public boolean leafLitterAccumulation = true;
     public double accumulationChance = 0.05;
     public boolean leafLitterDisappearance = true;
     public int maxLayers = 4;
+    public int accumulationSpeed = 100;
     public int disappearanceTicks = 36000;
+    public int disappearanceSpeed = 100;
 
     public boolean leafLitterShovelCollect = true;
 
@@ -47,7 +52,6 @@ public class LeafEnhancedConfig {
             if (loaded != null) {
                 INSTANCE = loaded;
                 INSTANCE.validate();
-                save();
             }
         } catch (IOException e) {
             LeafEnhancedMod.LOGGER.error("Failed to load config", e);
@@ -67,7 +71,14 @@ public class LeafEnhancedConfig {
         particleChance = clamp(particleChance, 0.0, 1.0);
         maxParticlesPerTick = clamp(maxParticlesPerTick, 0, 500);
         particleRenderDistance = clamp(particleRenderDistance, 4, 64);
+        distanceFalloff = clamp(distanceFalloff, 0.0, 1.0);
+        maxActiveParticles = clamp(maxActiveParticles, 100, 5000);
+        particleLifetime = clamp(particleLifetime, 20, 200);
+        spawnInterval = clamp(spawnInterval, 1, 20);
+        accumulationSpeed = clamp(accumulationSpeed, 0, 500);
+        disappearanceSpeed = clamp(disappearanceSpeed, 0, 500);
         baseWindStrength = clamp(baseWindStrength, 0.0f, 1.0f);
+        particleMaxWindSpeed = clamp(particleMaxWindSpeed, 0.05f, 1.0f);
         accumulationChance = clamp(accumulationChance, 0.0, 1.0);
         maxLayers = clamp(maxLayers, 1, 4);
         disappearanceTicks = clamp(disappearanceTicks, 20, 1200000);

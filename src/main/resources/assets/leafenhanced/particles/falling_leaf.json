@@ -1,5 +1,10 @@
 {
   "textures": [
-    "leafenhanced:particle/falling_leaf"
+    "leafenhanced:particle/falling_oak",
+    "leafenhanced:particle/falling_birch",
+    "leafenhanced:particle/falling_spruce",
+    "leafenhanced:particle/falling_jungle",
+    "leafenhanced:particle/falling_acacia",
+    "leafenhanced:particle/falling_dark_oak"
   ]
 }

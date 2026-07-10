@@ -1,91 +1,59 @@
-# 落叶增强模组实现计划
+# 落叶增强模组 TODO
 
 ## 当前状态
-- 设计文档已确定：`DESIGN.md`
-- Snow Real Magic 分析：`SNOW_REAL_MAGIC_ANALYSIS.md`
-- 用户不熟悉 Fabric 和 Mixin，但选择完整实现方案（B）。
-- 已精简设计，MVP 只保留核心功能 + 简单交互。
-- 临时 Mod ID：`leafenhanced`（包名 `com.leafenhanced.mod`），后续可改。
-- **MVP 代码已实现**，项目结构和资源文件已就位。
-- **构建验证受阻**：当前环境缺少完整 JDK 25 / Gradle 9.5.1 工具链，且 Loom 1.17.13 与 Gradle 9.5 在本环境出现 `disableObfuscation` 兼容性错误，需要在本机安装 Java 25 后执行 `gradlew build` 验证。
 
-## MVP 实现步骤（已完成）
+MVP 代码已全部完成，设计文档已同步更新。
 
-1. **升级项目环境到 Minecraft 26.2**
-   - 更新 `build.gradle`（Mojang 官方映射、Loom 1.17-SNAPSHOT、Java 25）
-   - 更新 `gradle.properties`（minecraft 26.2, loader 0.19.3, fabric-api 0.154.2+26.2）
-   - 更新 `settings.gradle`
-   - 添加 Gradle wrapper 9.5.1（`gradle-wrapper.jar` 需在本机联网后通过 `gradle wrapper` 或运行 `download-wrapper.bat` 生成）
+**已完成：** 核心功能、配置系统、性能优化、代码审查修复、设计文档更新。
 
-2. **创建模组基础结构**
-   - `fabric.mod.json`
-   - 主类 `LeafEnhancedMod.java`
-   - 客户端入口 `LeafEnhancedModClient.java`
+**待验证：** 编译 + 游戏内测试。
 
-3. **配置系统**
-   - 手写 JSON 配置 `LeafEnhancedConfig`（未使用 AutoConfig，因为 26.2 版本暂无确认可用的 AutoConfig 发布）
-   - 配置项：粒子开关/概率/密度/距离/风速、落叶层开关/概率/消失速度/最大层数、铲子收集
+## MVP 实现清单
 
-4. **落叶粒子与风力**
-   - 自定义粒子 `FallingLeafParticle` / 客户端渲染 `LeafParticleRenderer`
-   - 客户端全局风状态 `WindState`
-   - 受风力影响横向漂移、旋转、淡出
+### 代码 ✅
+- [x] 模组主入口 + 客户端入口
+- [x] 方块: LayeredLeafLitterBlock（4 层，无碰撞，可燃，铲子收集）
+- [x] 粒子: FallingLeafParticle + LeafParticleRenderer（受风漂移，渐隐消失，速度上限）
+- [x] 配置: LeafEnhancedConfig（ClothConfig 界面 + ModMenu 集成）
+- [x] Mixin: LeavesBlockMixin（randomTick @RETURN） + MinecraftMixin（tick）
+- [x] 风力: WindState（风向平滑变化，10~30 秒切换）
+- [x] 堆积: LeafLitterHandler（biome cache LRU，原版 leaf_litter 兼容）
+- [x] biome tag: deciduous_biomes.json（7 种温带群系）
 
-5. **自定义层状落叶方块**
-   - 方块 `LayeredLeafLitterBlock`（类似 `SnowLayerBlock`，无碰撞、可替换、可燃）
-   - 物品注册
-   - 方块状态、模型（4 层独立模型）
-   - 每层独立贴图（Python 生成的占位贴图）
-   - 掉落物 loot table
-   - 使用原版 `LEAVES` 声音组
+### 性能优化 ✅
+- [x] 全局粒子上限 config.maxActiveParticles
+- [x] 距离衰减 config.distanceFalloff
+- [x] 生成间隔 config.spawnInterval
+- [x] Y 偏向上方采样（+4~+16）
+- [x] 概率门控（getBiome 前先 random）
+- [x] 粒子风速 Mth.clamp
+- [x] 配置加载取消多余文件写入
 
-6. **树叶 random tick 堆积落叶**
-   - Mixin `LeavesBlockMixin` 注入 `randomTick`
-   - 群系判定 + 群系缓存
-   - 遇到原版 `leaf_litter` 时替换为自定义 1 层方块
+### 设计文档 ✅
+- [x] DESIGN.md 同步最新实现
+- [x] TODO.md 跟踪
+- [x] WIND_IMPROVEMENTS.md 未来风力改进记录
 
-7. **落叶消失**
-   - 随机 tick 让落叶层直接减少层数或消失（不变成泥土）
-
-8. **群系标签**
-   - `deciduous_biomes.json` biome tag（森林、桦木森林、繁花森林、黑森林、樱桃树林等）
-
-9. **简单交互**
-   - 铲子左键收集一层落叶
-   - 使用原版 `LEAVES` 声音组作为踩踏音效
-
-10. **游戏规则（gamerule）**
-    - `leavesAccumulationSpeed`
-    - `leavesParticleDensity`
-    - `leavesDisappearanceSpeed`
-
-11. **性能优化**
-    - 粒子渲染距离、每 tick 最大粒子数
-    - 群系缓存
-    - 落叶层只分 4 层
+### 清理 ✅
+- [x] 移除 gamerule、暴风雨、风声（超出 MVP）
+- [x] 移除空 init() 方法、未使用的 import
+- [x] 修复 Mth.clamp 下标越界防御、缺失 import
+- [x] .gitignore 清理多余规则
+- [x] README.md 完善
+- [x] 移除 build.gradle 中空的 publishing block
 
 ## 下一步
-- 在本机安装 JDK 25 并运行 `gradlew build` 验证编译。
-- 根据编译错误修正映射/类名（26.2 官方映射可能与代码假设有差异）。
-- 替换 Python 生成的占位贴图为美术资源。
+
+1. **`gradlew build` 验证编译** — 在本机 JDK 25 运行，根据错误修正 API 映射
+2. **游戏内测试** — 粒子视觉效果、风力表现、落叶堆积/消失/铲子收集
+3. **替换占位贴图** — 把 Python 生成的 4 层贴图换成正式美术资源
 
 ## 风险点
-- 26.2 比较新，文档和示例少。
-- 自定义层状方块是最大难点（方块状态、模型、4 张贴图）。
-- 不熟悉 Fabric/Mixin 会延长实现时间。
-- **Loom 1.17.13 + Gradle 9.5.1 在本环境出现兼容性问题**，可能需要等待 Loom 更新或在本机确认是否正常。
+
+- 26.2 比较新，官方映射可能与代码假设有差异
+- 未实际编译验证过，部分 API（BlockRenderLayerMap、SimpleSoundInstance 等）可能在 26.2 中已变更
+- `SoundType.GRASS` 的脚步声是否贴合落叶质感需进游戏确认
 
 ## 未来可扩展
-- 阵风事件、暴风雨事件。
-- 落叶散落。
-- 游戏规则（gamerule）。
-- 成就。
-- 光照/雨水影响消失。
-- 自定义落叶音效（替换原版 LEAVES 声音组）。
-- 落叶层方块套壳（台阶、楼梯、栅栏、墙）。
-- 不同树种落叶颜色/形状差异。
-- 落叶隐藏物品、落叶堆隐蔽、落叶层减速玩家。
 
-## 备注
-- 先完成 MVP，跑通核心功能后再考虑未来扩展。
-- 不要一次性实现所有功能。
+参考 `WIND_IMPROVEMENTS.md` 和 `DESIGN.md` 的"未来可扩展"章节。

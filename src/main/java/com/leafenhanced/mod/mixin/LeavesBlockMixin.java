@@ -1,5 +1,6 @@
 package com.leafenhanced.mod.mixin;
 
+import com.leafenhanced.mod.LeafEnhancedMod;
 import com.leafenhanced.mod.world.LeafLitterHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -19,7 +20,7 @@ public class LeavesBlockMixin {
         try {
             LeafLitterHandler.onLeafRandomTick(state, level, pos, random);
         } catch (Exception e) {
-            // Swallow to avoid breaking vanilla leaf behavior
+            LeafEnhancedMod.LOGGER.warn("Failed to handle leaf random tick", e);
         }
     }
 }

@@ -1,16 +1,7 @@
 {
   "variants": {
-    "layers=1": {
-      "model": "leafenhanced:block/layered_leaf_litter1"
-    },
-    "layers=2": {
-      "model": "leafenhanced:block/layered_leaf_litter2"
-    },
-    "layers=3": {
-      "model": "leafenhanced:block/layered_leaf_litter3"
-    },
-    "layers=4": {
-      "model": "leafenhanced:block/layered_leaf_litter4"
+    "": {
+      "model": "leafenhanced:block/leaf_litter_base"
     }
   }
 }

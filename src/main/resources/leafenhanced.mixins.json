@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.leafenhanced.mod.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "LeavesBlockMixin"
+  ],
+  "client": [
+    "MinecraftMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

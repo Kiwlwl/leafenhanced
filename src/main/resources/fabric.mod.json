@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "leafenhanced",
+  "version": "${version}",
+  "name": "LeafEnhanced",
+  "description": "Enhances vanilla falling leaves and leaf litter mechanics.",
+  "authors": [
+    "Anonymous"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/leafenhanced/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.leafenhanced.mod.LeafEnhancedMod"
+    ],
+    "client": [
+      "com.leafenhanced.mod.client.LeafEnhancedModClient"
+    ],
+    "modmenu": [
+      "com.leafenhanced.mod.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "leafenhanced.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": ">=0.154.2+26.2",
+    "cloth-config": ">=26.2.155"
+  },
+  "suggests": {
+    "modmenu": ">=20.0.0"
+  }
+}

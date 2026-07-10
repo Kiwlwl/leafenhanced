@@ -1,0 +1,39 @@
+# Gradle
+.gradle/
+build/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.code-workspace
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Java
+*.class
+
+# Runtime
+run/
+logs/
+
+# System
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Docs (Fabric official docs, not project code)
+docs/
+docs-zh/
+
+# Temp
+*.log
+*.zip
+node_modules/

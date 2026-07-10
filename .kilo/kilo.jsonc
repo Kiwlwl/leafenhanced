@@ -1,0 +1,6 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "commit_message": {
+    "prompt": "All responses must be in Chinese (Simplified). Use Chinese for explanations, status updates, and user-facing communication. Do not add comments to code unless explicitly asked by the user."
+  }
+}

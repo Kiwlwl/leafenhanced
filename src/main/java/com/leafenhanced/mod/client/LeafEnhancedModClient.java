@@ -1,5 +1,7 @@
 package com.leafenhanced.mod.client;
 
+import com.leafenhanced.mod.LeafEnhancedMod;
+import com.leafenhanced.mod.client.block.LayeredLeafLitterRenderer;
 import com.leafenhanced.mod.client.particle.LeafParticleRenderer;
 import com.leafenhanced.mod.client.wind.LeafSectionTracker;
 import com.leafenhanced.mod.client.wind.WindState;
@@ -11,6 +13,7 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
@@ -25,6 +28,7 @@ public class LeafEnhancedModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ParticleProviderRegistry.getInstance().register(FallingLeafParticle.TYPE, new LeafParticleRenderer.Provider());
+        BlockEntityRenderers.register(LeafEnhancedMod.LEAF_LITTER_BE, LayeredLeafLitterRenderer::new);
     }
 
     public static void onClientTick(Minecraft minecraft) {

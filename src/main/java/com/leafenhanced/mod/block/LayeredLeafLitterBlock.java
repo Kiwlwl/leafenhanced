@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -98,18 +99,18 @@ public class LayeredLeafLitterBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.is(newState.getBlock())) {
-            BlockEntity be = level.getBlockEntity(pos);
+    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
+        if (level instanceof Level l) {
+            BlockEntity be = l.getBlockEntity(pos);
             if (be instanceof LayeredLeafLitterBlockEntity leafBE) {
                 BlockState wrapped = leafBE.getWrappedState();
                 if (!wrapped.isAir()) {
-                    level.setBlock(pos, wrapped, 3);
+                    l.setBlock(pos, wrapped, 3);
                     return;
                 }
             }
         }
-        super.onRemove(state, level, pos, newState, moved);
+        super.destroy(level, pos, state);
     }
 
     private void restoreWrappedBlock(Level level, BlockPos pos) {

@@ -18,6 +18,8 @@ import net.minecraft.world.level.material.MapColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
+
 public class LeafEnhancedMod implements ModInitializer {
     public static final String MOD_ID = "leafenhanced";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -62,7 +64,7 @@ public class LeafEnhancedMod implements ModInitializer {
         LEAF_LITTER_BE = Registry.register(
                 BuiltInRegistries.BLOCK_ENTITY_TYPE,
                 Identifier.fromNamespaceAndPath(MOD_ID, "layered_leaf_litter"),
-                new BlockEntityType<>(LayeredLeafLitterBlockEntity::new, LAYERED_LEAF_LITTER)
+                new BlockEntityType<>(LayeredLeafLitterBlockEntity::new, Set.of(LAYERED_LEAF_LITTER))
         );
     }
 

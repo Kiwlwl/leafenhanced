@@ -7,7 +7,8 @@
     "LeavesBlockMixin"
   ],
   "client": [
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "LevelRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

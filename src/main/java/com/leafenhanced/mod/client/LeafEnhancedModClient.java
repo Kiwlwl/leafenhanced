@@ -1,8 +1,7 @@
 package com.leafenhanced.mod.client;
 
-import com.leafenhanced.mod.LeafEnhancedMod;
-import com.leafenhanced.mod.client.block.LayeredLeafLitterRenderer;
 import com.leafenhanced.mod.client.particle.LeafParticleRenderer;
+import com.leafenhanced.mod.client.wind.LeafSectionTracker;
 import com.leafenhanced.mod.client.wind.WindState;
 import com.leafenhanced.mod.config.LeafEnhancedConfig;
 import com.leafenhanced.mod.particle.FallingLeafParticle;
@@ -12,7 +11,6 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
@@ -27,7 +25,6 @@ public class LeafEnhancedModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ParticleProviderRegistry.getInstance().register(FallingLeafParticle.TYPE, new LeafParticleRenderer.Provider());
-        BlockEntityRenderers.register(LeafEnhancedMod.LEAF_LITTER_BE, LayeredLeafLitterRenderer::new);
     }
 
     public static void onClientTick(Minecraft minecraft) {
@@ -45,23 +42,11 @@ public class LeafEnhancedModClient implements ClientModInitializer {
         RandomSource random = level.getRandom();
 
         WindState.update(random);
+        LeafSectionTracker.flush();
 
         LeafEnhancedConfig config = LeafEnhancedConfig.get();
-        if (!config.fallingLeaves || config.particleChance <= 0) {
-            return;
-        }
 
         if (++tickCounter % config.spawnInterval != 0) {
-            return;
-        }
-
-        int attempts = config.maxParticlesPerTick;
-
-        if (attempts <= 0) {
-            return;
-        }
-
-        if (LeafParticleRenderer.getActiveCount() >= config.maxActiveParticles) {
             return;
         }
 
@@ -70,10 +55,13 @@ public class LeafEnhancedModClient implements ClientModInitializer {
         int rangeY = 12;
         float maxDistSqr = rangeXZ * rangeXZ + rangeY * rangeY;
 
-        double chance = config.particleChance;
+        double chance = config.fallingLeaves ? config.particleChance : 0;
         double falloff = config.distanceFalloff;
+        boolean canSpawn = chance > 0 && config.maxParticlesPerTick > 0
+            && LeafParticleRenderer.getActiveCount() < config.maxActiveParticles;
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int attempts = Math.max(config.maxParticlesPerTick, 30);
         int spawned = 0;
         for (int i = 0; i < attempts; i++) {
             int x = center.getX() + random.nextInt(rangeXZ * 2) - rangeXZ;
@@ -83,6 +71,12 @@ public class LeafEnhancedModClient implements ClientModInitializer {
 
             BlockState leafState = level.getBlockState(pos);
             if (!leafState.is(BlockTags.LEAVES)) {
+                continue;
+            }
+
+            LeafSectionTracker.mark(x, y, z);
+
+            if (!canSpawn) {
                 continue;
             }
 

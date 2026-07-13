@@ -23,6 +23,7 @@ public class LeafEnhancedConfig {
     public int spawnInterval = 5;
     public float baseWindStrength = 0.02f;
     public float particleMaxWindSpeed = 0.3f;
+    public float leafSwayStrength = 0.02f;
 
     public boolean leafLitterAccumulation = true;
     public double accumulationChance = 0.05;
@@ -79,6 +80,7 @@ public class LeafEnhancedConfig {
         disappearanceSpeed = clamp(disappearanceSpeed, 0, 500);
         baseWindStrength = clamp(baseWindStrength, 0.0f, 1.0f);
         particleMaxWindSpeed = clamp(particleMaxWindSpeed, 0.05f, 1.0f);
+        leafSwayStrength = clamp(leafSwayStrength, 0.0f, 1.0f);
         accumulationChance = clamp(accumulationChance, 0.0, 1.0);
         maxLayers = clamp(maxLayers, 1, 4);
         disappearanceTicks = clamp(disappearanceTicks, 20, 1200000);
